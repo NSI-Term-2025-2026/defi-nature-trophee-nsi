@@ -16,9 +16,6 @@ class Animaux:
         self.longueur = longueur
         self.longevite = longevite
 
-    def __repr__(self):
-        return f"{self.nom} | Poids:{self.poids} Longueur:{self.longueur} Longévité:{self.longevite}"
-
 
 class Joueur:
     def __init__(self, nom, cartes):
@@ -26,13 +23,15 @@ class Joueur:
         self.cartes = cartes
 
     def carte_visible(self):
+        if not self.cartes:
+            return None
         return self.cartes[-1]
 
     def enlever_carte(self):
         return self.cartes.pop()
 
     def ajouter_carte(self, carte):
-        # réinsertion aléatoire (comme ton code)
+        # réinsertion aléatoire
         self.cartes.insert(random.randint(0, len(self.cartes)), carte)
 
     def est_vaincu(self):
@@ -51,7 +50,6 @@ def choix_robot_aleatoire():
 
 
 def choix_robot_intelligent(carte, historique):
-    # version médiane (comme ton code)
     if not historique:
         return choix_robot_aleatoire()
 
@@ -69,16 +67,15 @@ def choix_robot_intelligent(carte, historique):
 
 class GameState:
     """
-    GameState = moteur prêt pour interface (Pygame)
-    - aucune UI ici
-    - invariants inclus
+    Moteur du jeu (aucun affichage ici)
+    Règle conservée: égalité => joueur actif perd (strict >)
     """
     def __init__(self, joueur1, joueur2, mode_robot=None):
         self.joueurs = [joueur1, joueur2]
         self.joueur_actif = joueur1
         self.joueur_passif = joueur2
 
-        # mode_robot : None (PvP), "A" (aléatoire), "I" (intelligent)
+        # None (PVP), "A" (robot aléatoire), "I" (robot intelligent)
         self.mode_robot = mode_robot
 
         self.historique_cartes = []
@@ -87,38 +84,35 @@ class GameState:
         self.terminee = False
         self.gagnant = None
 
-        # infos de dernière manche pour affichage
+        # infos de manche (pour UI)
         self.derniere_carac = None
         self.derniere_val_actif = None
         self.derniere_val_passif = None
         self.dernier_gagnant = None
 
     def actif_est_robot(self):
-        if self.mode_robot is None:
-            return False
-        return self.joueur_actif.nom.lower() == "robot"
+        return self.mode_robot is not None and self.joueur_actif.nom == "Robot"
 
     def appliquer_manche(self, caracteristique):
-        """
-        caracteristique: 'poids' / 'longueur' / 'longevite'
-        Règle conservée: si égalité -> joueur actif PERD (car v_actif > v_passif strict)
-        """
         if self.terminee:
             return
 
         carte_active = self.joueur_actif.carte_visible()
         carte_adverse = self.joueur_passif.carte_visible()
 
+        # sécurité
+        if carte_active is None or carte_adverse is None:
+            return
+
         v1 = getattr(carte_active, caracteristique)
         v2 = getattr(carte_adverse, caracteristique)
 
-        # strict >
         if v1 > v2:
             gagnant, perdant = self.joueur_actif, self.joueur_passif
         else:
             gagnant, perdant = self.joueur_passif, self.joueur_actif
 
-        # transfert + réinsertion aléatoire (comme ton moteur)
+        # transfert + réinsertion aléatoire
         carte_perdue = perdant.enlever_carte()
         gagnant.ajouter_carte(carte_perdue)
 
@@ -128,7 +122,6 @@ class GameState:
         self.historique_cartes.extend([carte_active, carte_adverse])
         self._verifier_invariants()
 
-        # stock infos pour UI
         self.derniere_carac = caracteristique
         self.derniere_val_actif = v1
         self.derniere_val_passif = v2
@@ -175,12 +168,6 @@ LISTE_ANIMAUX = [
 
 
 def creer_partie(mode, prenom="Humain"):
-    """
-    mode:
-      "PVP" -> Joueur 1 vs Joueur 2
-      "RA"  -> Humain vs Robot aléatoire
-      "RI"  -> Humain vs Robot intelligent
-    """
     c1, c2 = distribuer_cartes(LISTE_ANIMAUX)
 
     if mode == "PVP":
@@ -188,13 +175,15 @@ def creer_partie(mode, prenom="Humain"):
         j2 = Joueur("Joueur 2", c2)
         return GameState(j1, j2, mode_robot=None)
 
+    nom_humain = prenom.strip() if prenom.strip() else "Humain"
+
     if mode == "RA":
-        humain = Joueur(prenom if prenom.strip() else "Humain", c1)
+        humain = Joueur(nom_humain, c1)
         robot = Joueur("Robot", c2)
         return GameState(humain, robot, mode_robot="A")
 
     if mode == "RI":
-        humain = Joueur(prenom if prenom.strip() else "Humain", c1)
+        humain = Joueur(nom_humain, c1)
         robot = Joueur("Robot", c2)
         return GameState(humain, robot, mode_robot="I")
 
@@ -205,12 +194,12 @@ def creer_partie(mode, prenom="Humain"):
 # ======================= PYGAME / UI =========================
 # ============================================================
 
-# Fenêtre
-LARGEUR, HAUTEUR = 700, 500
+# Fenêtre agrandie
+LARGEUR, HAUTEUR = 900, 600
 fenetre = pygame.display.set_mode((LARGEUR, HAUTEUR))
 pygame.display.set_caption("Défi Nature")
 
-# Couleurs (ta maquette)
+# Couleurs (ton thème)
 FOND = (30, 34, 40)
 PANEL = (42, 47, 54)
 VERT_NATURE = (58, 125, 90)
@@ -221,138 +210,219 @@ BLANC = (245, 245, 245)
 NOIR = (26, 26, 26)
 
 # Polices
-police_titre = pygame.font.SysFont("arial", 36, bold=True)
-police = pygame.font.SysFont("arial", 20)
-police_menu = pygame.font.SysFont("arial", 28, bold=True)
+police_titre = pygame.font.SysFont("arial", 44, bold=True)
+police = pygame.font.SysFont("arial", 22)
+police_menu = pygame.font.SysFont("arial", 30, bold=True)
 police_petite = pygame.font.SysFont("arial", 16)
 
-# Surfaces (ta maquette)
-frame_haut = pygame.Surface((LARGEUR, 80))
-frame_gauche = pygame.Surface((150, HAUTEUR - 80))
-frame_jeu = pygame.Surface((LARGEUR - 150, HAUTEUR - 80))
+# Dimensions layout
+HAUT_H = 90
+GAUCHE_W = 180
 
-frame_j1 = pygame.Surface(((frame_jeu.get_width() - 10) // 2, frame_jeu.get_height() - 90))
-frame_j2 = pygame.Surface(((frame_jeu.get_width() - 10) // 2, frame_jeu.get_height() - 90))
+# Surfaces (comme ta maquette)
+frame_haut = pygame.Surface((LARGEUR, HAUT_H))
+frame_gauche = pygame.Surface((GAUCHE_W, HAUTEUR - HAUT_H))
+frame_jeu = pygame.Surface((LARGEUR - GAUCHE_W, HAUTEUR - HAUT_H))
 
-# Menu hamburger (ta maquette)
+# Deux zones joueurs dans frame_jeu
+frame_j1 = pygame.Surface(((frame_jeu.get_width() - 20) // 2, frame_jeu.get_height() - 150))
+frame_j2 = pygame.Surface(((frame_jeu.get_width() - 20) // 2, frame_jeu.get_height() - 150))
+
+# Menu hamburger (conservé)
 menu_ouvert = False
 options = ["Rejouer", "Règles", "Quitter"]
-bouton_menu = pygame.Rect(20, 20, 40, 40)
-option_rects = [pygame.Rect(20, 80 + i * 55, 110, 40) for i in range(len(options))]
+bouton_menu = pygame.Rect(20, 22, 46, 46)
+option_rects = [pygame.Rect(20, 30 + i * 60, 140, 46) for i in range(len(options))]
 
-# Zone carte (ta maquette)
+# Zone carte (dans frame_j1/j2)
 zone_carte = pygame.Rect(20, 20, frame_j1.get_width() - 40, frame_j1.get_height() - 40)
 
-# Boutons caractéristiques (ta maquette)
+# Boutons caractéristiques (dans frame_jeu)
 caracteristiques = [("Poids", "poids"), ("Longueur", "longueur"), ("Longévité", "longevite")]
 boutons_carac = []
-BTN_W, BTN_H = 140, 40
-y_btn = frame_jeu.get_height() - 50
+BTN_W, BTN_H = 170, 46
+
+# Bandeau tour (dans frame_jeu)
+tour_bar_rect = pygame.Rect(20, frame_jeu.get_height() - 120, frame_jeu.get_width() - 40, 34)
+
+# Boutons en bas
+y_btn = frame_jeu.get_height() - 75
+x0 = 80
+gap = 30
 for i, (label, key) in enumerate(caracteristiques):
-    x = 40 + i * (BTN_W + 20)
+    x = x0 + i * (BTN_W + gap)
     boutons_carac.append((label, key, pygame.Rect(x, y_btn, BTN_W, BTN_H)))
 
-# Bandeau "Tour de ..."
-tour_bar_rect = pygame.Rect(20, frame_jeu.get_height() - 85, frame_jeu.get_width() - 40, 28)
-
-# Règles (adaptées et affichées avec wrap automatique)
+# Règles (overlay)
 regles_texte = [
     "Modes : Joueur vs Joueur / Joueur vs Robot.",
-    "Chaque carte représente un animal avec : Poids, Longueur, Longévité.",
-    "Toutes les cartes sont mélangées puis distribuées équitablement entre les joueurs.",
-    "Chaque joueur joue la dernière carte de son tas (carte visible).",
+    "",
+    "Chaque carte représente un animal avec :",
+    "- Poids",
+    "- Longueur",
+    "- Longévité",
+    "",
+    "Distribution : cartes mélangées puis partagées.",
+    "Carte jouée = dernière carte du tas.",
+    "",
     "Le joueur actif choisit une caractéristique.",
-    "La valeur la plus élevée remporte la manche.",
-    "Règle importante : en cas d'égalité, le joueur actif perd la manche.",
-    "Le gagnant récupère la carte adverse et sa carte jouée est réinsérée aléatoirement.",
-    "La partie se termine lorsqu’un joueur n’a plus de cartes."
+    "La valeur la plus élevée gagne la manche.",
+    "",
+    "Important : en cas d'égalité, le joueur actif perd.",
+    "",
+    "Le gagnant récupère la carte adverse.",
+    "Les cartes sont réinsérées aléatoirement.",
+    "",
+    "Fin : lorsqu'un joueur n'a plus de cartes."
 ]
 afficher_regles = False
 
-# États UI (machine à états)
-UI_START = "START"        # choix mode + prénom
-UI_PLAY = "PLAY"          # choix carac / robot auto
-UI_RESULT = "RESULT"      # résultat manche, clic pour continuer
-UI_END = "END"            # fin de partie
+# ============================================================
+# ========================= UTILITAIRES =======================
+# ============================================================
+
+def wrap_lines(text, font, max_width):
+    words = text.split(" ")
+    lines, cur = [], ""
+    for w in words:
+        test = (cur + " " + w).strip()
+        if font.size(test)[0] <= max_width:
+            cur = test
+        else:
+            if cur:
+                lines.append(cur)
+            cur = w
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def draw_card(surface, joueur, est_actif, highlight=False):
+    # base
+    pygame.draw.rect(surface, CARTE_COL, zone_carte, border_radius=12)
+
+    # bordure actif / highlight animation
+    if highlight:
+        pygame.draw.rect(surface, BOUTON_ACTIF, zone_carte, width=8, border_radius=12)
+    elif est_actif:
+        pygame.draw.rect(surface, BOUTON_ACTIF, zone_carte, width=4, border_radius=12)
+
+    carte = joueur.carte_visible()
+    if carte is None:
+        surface.blit(police.render(joueur.nom, True, NOIR), (30, 28))
+        surface.blit(police.render("Plus de cartes", True, NOIR), (30, 120))
+        surface.blit(police.render(f"Cartes : {len(joueur.cartes)}", True, NOIR), (30, 235))
+        return
+
+    surface.blit(police.render(joueur.nom, True, NOIR), (30, 28))
+    surface.blit(police.render(carte.nom, True, NOIR), (30, 62))
+
+    surface.blit(police.render(f"Poids : {carte.poids}", True, NOIR), (30, 120))
+    surface.blit(police.render(f"Longueur : {carte.longueur}", True, NOIR), (30, 152))
+    surface.blit(police.render(f"Longévité : {carte.longevite}", True, NOIR), (30, 184))
+
+    surface.blit(police.render(f"Cartes : {len(joueur.cartes)}", True, NOIR), (30, 235))
+
+
+def dessiner_bouton(surface, rect, texte, actif=True):
+    couleur = BOUTON_ACTIF if actif else BOUTON
+    pygame.draw.rect(surface, couleur, rect, border_radius=12)
+    t = police.render(texte, True, NOIR)
+    surface.blit(t, (rect.x + 18, rect.y + 16))
+
+
+# ============================================================
+# ========================= ETATS UI ==========================
+# ============================================================
+
+UI_START = "START"
+UI_PLAY = "PLAY"
+UI_ANIM = "ANIM"      # animation fin de manche
+UI_RESULT = "RESULT"  # résultat + clic pour continuer
+UI_END = "END"        # écran victoire dédié
 
 ui_state = UI_START
 game = None
 message_ui = ""
 
-# Start screen : boutons mode
-start_buttons = [
-    ("Joueur vs Joueur", "PVP", pygame.Rect(220, 220, 260, 52)),
-    ("Vs Robot aléatoire", "RA", pygame.Rect(220, 285, 260, 52)),
-    ("Vs Robot intelligent", "RI", pygame.Rect(220, 350, 260, 52)),
-]
+# Animation fin de manche
+anim_start_ms = 0
+ANIM_DUREE_MS = 700
+anim_winner_index = None  # 0 ou 1 (joueur gagnant de la manche)
 
-# Start screen : entrée prénom
+# Écran start : prénom + modes
 prenom = ""
 prenom_actif = True
-input_rect = pygame.Rect(220, 155, 260, 45)
+input_rect = pygame.Rect(0, 0, 320, 50)
+clear_rect = pygame.Rect(0, 0, 46, 50)
+start_buttons = []
 
-# Bouton "effacer"
-clear_rect = pygame.Rect(490, 155, 40, 45)
+# Boutons écran de victoire (Rejouer direct + Quitter)
+victory_replay_rect = pygame.Rect(0, 0, 260, 60)
+victory_quit_rect = pygame.Rect(0, 0, 260, 60)
 
-# ============================================================
-# ===================== FONCTIONS UI ==========================
-# ============================================================
+def layout_start():
+    box = pygame.Rect(GAUCHE_W + 40, HAUT_H + 30, LARGEUR - GAUCHE_W - 80, HAUTEUR - HAUT_H - 60)
 
-def dessiner_bouton(surface, rect, texte, actif=True):
-    couleur = BOUTON_ACTIF if actif else BOUTON
-    pygame.draw.rect(surface, couleur, rect, border_radius=10)
-    txt = police.render(texte, True, NOIR)
-    surface.blit(txt, (rect.x + 16, rect.y + 14))
+    input_rect.width, input_rect.height = 320, 50
+    input_rect.x = box.x + 70
+    input_rect.y = box.y + 85
 
+    clear_rect.x = input_rect.right + 12
+    clear_rect.y = input_rect.y
+    clear_rect.width, clear_rect.height = 46, 50
 
-def wrap_lines(text, font, max_width):
-    """
-    Découpe un texte en lignes pour qu'elles tiennent dans max_width.
-    """
-    words = text.split(" ")
-    lines = []
-    current = ""
-    for w in words:
-        test = (current + " " + w).strip()
-        if font.size(test)[0] <= max_width:
-            current = test
-        else:
-            if current:
-                lines.append(current)
-            current = w
-    if current:
-        lines.append(current)
-    return lines
+    start_buttons.clear()
+    bw, bh = 360, 58
+    bx = box.x + 70
+    by = input_rect.y + 85
+    start_buttons.extend([
+        ("Joueur vs Joueur", "PVP", pygame.Rect(bx, by, bw, bh)),
+        ("Vs Robot aléatoire", "RA", pygame.Rect(bx, by + 75, bw, bh)),
+        ("Vs Robot intelligent", "RI", pygame.Rect(bx, by + 150, bw, bh)),
+    ])
+    return box
 
+def layout_victory_panel():
+    panel = pygame.Rect(GAUCHE_W + 110, HAUT_H + 90, LARGEUR - GAUCHE_W - 220, HAUTEUR - HAUT_H - 180)
+    # boutons centrés dans panel
+    victory_replay_rect.width, victory_replay_rect.height = 260, 60
+    victory_quit_rect.width, victory_quit_rect.height = 260, 60
 
-def draw_card(surface, joueur, est_actif):
-    pygame.draw.rect(surface, CARTE_COL, zone_carte, border_radius=12)
-    if est_actif:
-        pygame.draw.rect(surface, BOUTON_ACTIF, zone_carte, width=4, border_radius=12)
+    victory_replay_rect.x = panel.centerx - victory_replay_rect.width // 2
+    victory_replay_rect.y = panel.y + panel.height - 140
 
-    carte = joueur.carte_visible()
+    victory_quit_rect.x = panel.centerx - victory_quit_rect.width // 2
+    victory_quit_rect.y = panel.y + panel.height - 70
+    return panel
 
-    surface.blit(police.render(joueur.nom, True, NOIR), (30, 26))
-    surface.blit(police.render(carte.nom, True, NOIR), (30, 56))
+def start_round_animation():
+    global ui_state, anim_start_ms, anim_winner_index
+    ui_state = UI_ANIM
+    anim_start_ms = pygame.time.get_ticks()
+    if game is None or game.dernier_gagnant is None:
+        anim_winner_index = None
+        return
+    anim_winner_index = 0 if game.dernier_gagnant is game.joueurs[0] else 1
 
-    surface.blit(police.render(f"Poids : {carte.poids}", True, NOIR), (30, 105))
-    surface.blit(police.render(f"Longueur : {carte.longueur}", True, NOIR), (30, 135))
-    surface.blit(police.render(f"Longévité : {carte.longevite}", True, NOIR), (30, 165))
-
-    surface.blit(police.render(f"Cartes : {len(joueur.cartes)}", True, NOIR), (30, 215))
-
-
+# Robot auto
 def robot_joue_si_besoin():
-    global ui_state, message_ui
+    global message_ui
+
     if game is None:
         return
+
+    # si déjà finie, on va au END (écran victoire dédié)
     if game.terminee:
-        ui_state = UI_END
-        message_ui = f"🏆 {game.gagnant.nom} gagne la partie !"
+        ui_state_to_end()
         return
 
     if ui_state == UI_PLAY and game.actif_est_robot():
         carte = game.joueur_actif.carte_visible()
+        if carte is None:
+            ui_state_to_end()
+            return
+
         if game.mode_robot == "A":
             car = choix_robot_aleatoire()
         else:
@@ -362,35 +432,46 @@ def robot_joue_si_besoin():
 
         label = {"poids": "Poids", "longueur": "Longueur", "longevite": "Longévité"}[car]
         message_ui = f"{label} : {game.derniere_val_actif} vs {game.derniere_val_passif} — {game.dernier_gagnant.nom} gagne"
-        ui_state = UI_END if game.terminee else UI_RESULT
+        start_round_animation()
 
+def ui_state_to_end():
+    global ui_state
+    ui_state = UI_END
 
-# ============================================================
-# ========================= BOUCLE ============================
-# ============================================================
+# Répétition clavier (prénom)
+pygame.key.set_repeat(350, 35)
 
 clock = pygame.time.Clock()
 running = True
 
+# ============================================================
+# ============================ BOUCLE =========================
+# ============================================================
+
 while running:
+    # robot joue automatiquement si besoin
     robot_joue_si_besoin()
+
+    # fin animation -> basculer vers RESULT ou END
+    if ui_state == UI_ANIM:
+        if pygame.time.get_ticks() - anim_start_ms >= ANIM_DUREE_MS:
+            if game is not None and game.terminee:
+                ui_state_to_end()
+            else:
+                ui_state = UI_RESULT  # on garde le clic pour continuer
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-        # =========================
-        # INPUT PRENOM (START)
-        # =========================
-        if ui_state == UI_START and event.type == pygame.KEYDOWN:
+        # clavier : saisie prénom
+        if ui_state == UI_START and event.type == pygame.KEYDOWN and prenom_actif and not afficher_regles:
             if event.key == pygame.K_BACKSPACE:
                 prenom = prenom[:-1]
             elif event.key == pygame.K_RETURN:
-                # pas obligatoire, mais ça valide visuellement
                 prenom_actif = False
             else:
-                if len(prenom) < 14 and event.unicode.isprintable():
-                    # filtrage simple: lettres + espace + tiret
+                if len(prenom) < 16 and event.unicode.isprintable():
                     if event.unicode.isalnum() or event.unicode in [" ", "-", "_"]:
                         prenom += event.unicode
 
@@ -399,41 +480,45 @@ while running:
 
             # Overlay règles : clic pour fermer
             if afficher_regles:
-                if 80 <= x <= 620 and 60 <= y <= 440:
+                if 120 <= x <= LARGEUR - 120 and 90 <= y <= HAUTEUR - 90:
                     afficher_regles = False
                 continue
 
-            # Hamburger
+            # hamburger
             if bouton_menu.collidepoint(x, y):
                 menu_ouvert = not menu_ouvert
 
-            # Options menu
+            # menu options (gauche)
             if menu_ouvert:
-                for i, rect in enumerate(option_rects):
-                    if rect.collidepoint(x, y - 80):
-                        opt = options[i]
-                        if opt == "Quitter":
-                            running = False
-                        elif opt == "Règles":
-                            afficher_regles = True
-                        elif opt == "Rejouer":
-                            ui_state = UI_START
-                            game = None
-                            message_ui = ""
-                            prenom_actif = True
-                        menu_ouvert = False
+                lx, ly = x, y - HAUT_H
+                if 0 <= lx <= GAUCHE_W and 0 <= ly <= (HAUTEUR - HAUT_H):
+                    for i, rect in enumerate(option_rects):
+                        if rect.collidepoint(lx, ly):
+                            opt = options[i]
+                            if opt == "Quitter":
+                                running = False
+                            elif opt == "Règles":
+                                afficher_regles = True
+                            elif opt == "Rejouer":
+                                ui_state = UI_START
+                                game = None
+                                message_ui = ""
+                                menu_ouvert = False
+                                prenom_actif = True
+                            menu_ouvert = False
 
-            # START : activation champ + effacer + choix mode
+            # START : clic champ / clear / mode
             if ui_state == UI_START:
+                box = layout_start()
+
                 if input_rect.collidepoint(x, y):
                     prenom_actif = True
-                if clear_rect.collidepoint(x, y):
+                elif clear_rect.collidepoint(x, y):
                     prenom = ""
                     prenom_actif = True
 
                 for label, mode, rect in start_buttons:
                     if rect.collidepoint(x, y):
-                        # si PVP, le prénom n'est pas utilisé (mais on le garde)
                         game = creer_partie(mode, prenom=prenom)
                         ui_state = UI_PLAY
                         message_ui = ""
@@ -442,23 +527,40 @@ while running:
 
             # RESULT : clic pour continuer
             elif ui_state == UI_RESULT:
-                ui_state = UI_END if (game and game.terminee) else UI_PLAY
+                ui_state = UI_PLAY
                 message_ui = ""
 
-            # PLAY : clic carac (seulement si humain actif)
+            # ANIM : on ignore les clics (anti-spam)
+            elif ui_state == UI_ANIM:
+                pass
+
+            # END : écran victoire dédié avec boutons directs
+            elif ui_state == UI_END:
+                panel = layout_victory_panel()
+                if victory_replay_rect.collidepoint(x, y):
+                    ui_state = UI_START
+                    game = None
+                    message_ui = ""
+                    menu_ouvert = False
+                    prenom_actif = True
+                elif victory_quit_rect.collidepoint(x, y):
+                    running = False
+
+            # PLAY : clic carac si humain actif
             elif ui_state == UI_PLAY and game is not None and not game.actif_est_robot() and not game.terminee:
-                local_x = x - 150
-                local_y = y - 80
+                local_x = x - GAUCHE_W
+                local_y = y - HAUT_H
                 for label, key, rect in boutons_carac:
                     if rect.collidepoint(local_x, local_y):
                         game.appliquer_manche(key)
                         message_ui = f"{label} : {game.derniere_val_actif} vs {game.derniere_val_passif} — {game.dernier_gagnant.nom} gagne"
-                        ui_state = UI_END if game.terminee else UI_RESULT
+                        start_round_animation()
                         break
 
-    # =========================
-    # AFFICHAGE
-    # =========================
+    # ============================================================
+    # ========================= AFFICHAGE =========================
+    # ============================================================
+
     fenetre.fill(FOND)
 
     frame_haut.fill(VERT_NATURE)
@@ -469,149 +571,186 @@ while running:
 
     # Titre
     texte_titre = police_titre.render("Défi Nature", True, BLANC)
-    frame_haut.blit(texte_titre, (220, 20))
+    frame_haut.blit(texte_titre, (LARGEUR // 2 - texte_titre.get_width() // 2, 20))
 
     # Hamburger
-    pygame.draw.rect(frame_haut, PANEL, bouton_menu, border_radius=6)
+    pygame.draw.rect(frame_haut, PANEL, bouton_menu, border_radius=8)
     icone = police_menu.render("≡" if not menu_ouvert else "×", True, BLANC)
-    frame_haut.blit(icone, (bouton_menu.x + 10, bouton_menu.y + 2))
+    frame_haut.blit(icone, (bouton_menu.x + 13, bouton_menu.y + 4))
 
     # Menu gauche
     if menu_ouvert:
         for i, rect in enumerate(option_rects):
-            pygame.draw.rect(frame_gauche, FOND, rect, border_radius=8)
+            pygame.draw.rect(frame_gauche, FOND, rect, border_radius=10)
             txt = police.render(options[i], True, BLANC)
-            frame_gauche.blit(txt, (rect.x + 15, rect.y + 10))
+            frame_gauche.blit(txt, (rect.x + 18, rect.y + 12))
 
-    # START screen
+    # START
     if ui_state == UI_START:
+        box = layout_start()
+
         fenetre.blit(frame_haut, (0, 0))
-        fenetre.blit(frame_gauche, (0, 80))
-        fenetre.blit(frame_jeu, (150, 80))
+        fenetre.blit(frame_gauche, (0, HAUT_H))
+        fenetre.blit(frame_jeu, (GAUCHE_W, HAUT_H))
 
-        box = pygame.Rect(170, 110, 510, 360)
-        pygame.draw.rect(fenetre, PANEL, box, border_radius=14)
-        pygame.draw.rect(fenetre, VERT_NATURE, box, width=3, border_radius=14)
+        pygame.draw.rect(fenetre, PANEL, box, border_radius=16)
+        pygame.draw.rect(fenetre, VERT_NATURE, box, width=3, border_radius=16)
 
-        t = police_menu.render("Choisis un mode", True, BLANC)
-        fenetre.blit(t, (box.x + 145, box.y + 18))
+        titre = police_menu.render("Choisis un mode", True, BLANC)
+        fenetre.blit(titre, (box.x + 70, box.y + 25))
 
-        # Champ prénom
-        label_prenom = police.render("Ton prénom :", True, BLANC)
-        fenetre.blit(label_prenom, (input_rect.x, input_rect.y - 28))
+        lab = police.render("Ton prénom :", True, BLANC)
+        fenetre.blit(lab, (input_rect.x, input_rect.y - 30))
 
-        pygame.draw.rect(fenetre, CARTE_COL, input_rect, border_radius=10)
-        pygame.draw.rect(fenetre, BOUTON_ACTIF if prenom_actif else VERT_NATURE, input_rect, width=2, border_radius=10)
+        pygame.draw.rect(fenetre, CARTE_COL, input_rect, border_radius=12)
+        pygame.draw.rect(
+            fenetre,
+            BOUTON_ACTIF if prenom_actif else VERT_NATURE,
+            input_rect,
+            width=2,
+            border_radius=12
+        )
+        fenetre.blit(police.render(prenom, True, NOIR), (input_rect.x + 12, input_rect.y + 12))
 
-        prenom_aff = prenom if prenom else ""
-        txt_prenom = police.render(prenom_aff, True, NOIR)
-        fenetre.blit(txt_prenom, (input_rect.x + 10, input_rect.y + 12))
+        pygame.draw.rect(fenetre, BOUTON, clear_rect, border_radius=12)
+        fenetre.blit(police_menu.render("×", True, NOIR), (clear_rect.x + 14, clear_rect.y + 4))
 
-        # bouton clear
-        pygame.draw.rect(fenetre, BOUTON, clear_rect, border_radius=10)
-        fenetre.blit(police_menu.render("×", True, NOIR), (clear_rect.x + 11, clear_rect.y + 5))
-
-        # Boutons modes
         for label, mode, rect in start_buttons:
             dessiner_bouton(fenetre, rect, label, actif=True)
 
         hint = police_petite.render("Menu ≡ : Rejouer / Règles / Quitter", True, BLANC)
-        fenetre.blit(hint, (210, 470))
+        fenetre.blit(hint, (box.x + 70, box.bottom - 30))
 
     else:
-        # Jeu en cours
+        # Jeu : cartes + boutons
         if game is not None:
             est_actif_j1 = (game.joueur_actif is game.joueurs[0])
             est_actif_j2 = (game.joueur_actif is game.joueurs[1])
 
-            draw_card(frame_j1, game.joueurs[0], est_actif_j1)
-            draw_card(frame_j2, game.joueurs[1], est_actif_j2)
+            # highlight animation: on met une bordure forte sur le gagnant de la manche
+            highlight_j1 = (ui_state == UI_ANIM and anim_winner_index == 0)
+            highlight_j2 = (ui_state == UI_ANIM and anim_winner_index == 1)
+
+            draw_card(frame_j1, game.joueurs[0], est_actif_j1, highlight=highlight_j1)
+            draw_card(frame_j2, game.joueurs[1], est_actif_j2, highlight=highlight_j2)
 
             frame_jeu.blit(frame_j1, (0, 0))
-            frame_jeu.blit(frame_j2, (frame_j1.get_width() + 10, 0))
+            frame_jeu.blit(frame_j2, (frame_j1.get_width() + 20, 0))
 
             # Bandeau tour
-            pygame.draw.rect(frame_jeu, FOND, tour_bar_rect, border_radius=10)
+            pygame.draw.rect(frame_jeu, FOND, tour_bar_rect, border_radius=12)
             info = f"Tour de : {game.joueur_actif.nom}"
             if game.actif_est_robot():
                 info += " (Robot)"
             txt_info = police.render(info, True, BLANC)
-            frame_jeu.blit(txt_info, (tour_bar_rect.x + 12, tour_bar_rect.y + 5))
+            frame_jeu.blit(txt_info, (tour_bar_rect.x + 14, tour_bar_rect.y + 6))
 
-            # Boutons carac (activés uniquement si humain actif et UI_PLAY)
+            # Boutons carac : désactivés pendant ANIM/RESULT/END ou robot
             boutons_actifs = (ui_state == UI_PLAY and not game.actif_est_robot() and not game.terminee)
             for label, key, rect in boutons_carac:
                 couleur = BOUTON_ACTIF if boutons_actifs else BOUTON
-                pygame.draw.rect(frame_jeu, couleur, rect, border_radius=8)
+                pygame.draw.rect(frame_jeu, couleur, rect, border_radius=10)
                 t = police.render(label, True, NOIR)
-                frame_jeu.blit(t, (rect.x + 25, rect.y + 10))
+                frame_jeu.blit(t, (rect.x + 20, rect.y + 12))
 
-            # Message résultat / fin
+            # Message
             if message_ui:
                 txt_msg = police_petite.render(message_ui, True, BLANC)
                 frame_jeu.blit(txt_msg, (20, frame_jeu.get_height() - 20))
 
             if ui_state == UI_RESULT:
                 txt = police_petite.render("Clique pour continuer…", True, BOUTON_ACTIF)
-                frame_jeu.blit(txt, (frame_jeu.get_width() - 190, frame_jeu.get_height() - 20))
+                frame_jeu.blit(txt, (frame_jeu.get_width() - 210, frame_jeu.get_height() - 20))
 
-            if ui_state == UI_END and game.terminee:
-                txt = police_menu.render("FIN", True, BOUTON_ACTIF)
-                frame_jeu.blit(txt, (frame_jeu.get_width() - 80, 10))
-
+        # blit principal
         fenetre.blit(frame_haut, (0, 0))
-        fenetre.blit(frame_gauche, (0, 80))
-        fenetre.blit(frame_jeu, (150, 80))
+        fenetre.blit(frame_gauche, (0, HAUT_H))
+        fenetre.blit(frame_jeu, (GAUCHE_W, HAUT_H))
 
-    # Overlay règles : wrap automatique pour ne pas déborder
+    # ===================== OVERLAY RÈGLES =====================
     if afficher_regles:
         overlay = pygame.Surface((LARGEUR, HAUTEUR), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
         fenetre.blit(overlay, (0, 0))
 
-        regles_frame = pygame.Rect(80, 60, 540, 380)
-        pygame.draw.rect(fenetre, PANEL, regles_frame, border_radius=12)
-        pygame.draw.rect(fenetre, VERT_NATURE, 3, regles_frame, border_radius=12)
+        regles_frame = pygame.Rect(120, 90, LARGEUR - 240, HAUTEUR - 180)
+        pygame.draw.rect(fenetre, PANEL, regles_frame, border_radius=14)
+        pygame.draw.rect(fenetre, VERT_NATURE, regles_frame, 3, border_radius=14)
 
         titre = police_menu.render("Règles du jeu", True, BLANC)
-        fenetre.blit(titre, (regles_frame.x + 170, regles_frame.y + 15))
+        fenetre.blit(titre, (regles_frame.x + 30, regles_frame.y + 20))
 
-        max_w = regles_frame.width - 40
-        y_text = regles_frame.y + 60
+        max_w = regles_frame.width - 60
+        y_text = regles_frame.y + 75
+        line_h = 20
+        font_rules = police
 
-        # on adapte la police si vraiment trop long
-        font_rules = police_petite
-        line_h = 18
-
-        # Construire toutes les lignes wrappées
         lignes = []
-        for ligne in regles_texte:
-            if not ligne.strip():
+        for l in regles_texte:
+            if not l.strip():
                 lignes.append("")
-                continue
-            lignes.extend(wrap_lines(ligne, font_rules, max_w))
+            elif l.startswith("- "):
+                for ll in wrap_lines(l, font_rules, max_w):
+                    lignes.append("  " + ll)
+            else:
+                lignes.extend(wrap_lines(l, font_rules, max_w))
 
-        # Si trop de lignes, on réduit légèrement l'interligne (et police)
-        max_lines = (regles_frame.height - 110) // line_h
+        max_lines = (regles_frame.height - 120) // line_h
         if len(lignes) > max_lines:
-            font_rules = pygame.font.SysFont("arial", 14)
-            line_h = 16
+            font_rules = pygame.font.SysFont("arial", 18)
+            line_h = 18
             lignes = []
-            for ligne in regles_texte:
-                if not ligne.strip():
+            for l in regles_texte:
+                if not l.strip():
                     lignes.append("")
-                    continue
-                lignes.extend(wrap_lines(ligne, font_rules, max_w))
+                elif l.startswith("- "):
+                    for ll in wrap_lines(l, font_rules, max_w):
+                        lignes.append("  " + ll)
+                else:
+                    lignes.extend(wrap_lines(l, font_rules, max_w))
 
-        # Affichage (coupure douce si encore trop long)
-        max_lines = (regles_frame.height - 110) // line_h
-        for i, l in enumerate(lignes[:max_lines]):
-            txt = font_rules.render(l, True, BLANC)
-            fenetre.blit(txt, (regles_frame.x + 20, y_text))
+        max_lines = (regles_frame.height - 120) // line_h
+        for l in lignes[:max_lines]:
+            fenetre.blit(font_rules.render(l, True, BLANC), (regles_frame.x + 30, y_text))
             y_text += line_h
 
-        fermer = police.render("Cliquez dans la fenêtre pour fermer", True, BOUTON_ACTIF)
-        fenetre.blit(fermer, (regles_frame.x + 85, regles_frame.y + 350))
+        fermer = police_petite.render("Cliquez dans la fenêtre pour fermer", True, BOUTON_ACTIF)
+        fenetre.blit(fermer, (regles_frame.x + 30, regles_frame.bottom - 35))
+
+    # ===================== ECRAN VICTOIRE DEDIE =====================
+    if ui_state == UI_END:
+        # overlay sombre
+        overlay = pygame.Surface((LARGEUR, HAUTEUR), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        fenetre.blit(overlay, (0, 0))
+
+        panel = layout_victory_panel()
+        pygame.draw.rect(fenetre, PANEL, panel, border_radius=18)
+        pygame.draw.rect(fenetre, VERT_NATURE, panel, 3, border_radius=18)
+
+        titre = police_menu.render("Victoire !", True, BLANC)
+        fenetre.blit(titre, (panel.x + 30, panel.y + 25))
+
+        if game is not None and game.gagnant is not None:
+            msg = f"🏆 {game.gagnant.nom} a gagné la partie"
+            tmsg = police.render(msg, True, BOUTON_ACTIF)
+            fenetre.blit(tmsg, (panel.x + 30, panel.y + 80))
+
+            # stats simples
+            j1, j2 = game.joueurs[0], game.joueurs[1]
+            s1 = police.render(f"{j1.nom} : {len(j1.cartes)} cartes", True, BLANC)
+            s2 = police.render(f"{j2.nom} : {len(j2.cartes)} cartes", True, BLANC)
+            fenetre.blit(s1, (panel.x + 30, panel.y + 125))
+            fenetre.blit(s2, (panel.x + 30, panel.y + 155))
+        else:
+            tmsg = police.render("Partie terminée", True, BOUTON_ACTIF)
+            fenetre.blit(tmsg, (panel.x + 30, panel.y + 80))
+
+        # Boutons directs
+        dessiner_bouton(fenetre, victory_replay_rect, "Rejouer", actif=True)
+        dessiner_bouton(fenetre, victory_quit_rect, "Quitter", actif=False)
+
+        fenetre.blit(hint, (panel.x + 30, panel.bottom - 30))
 
     pygame.display.flip()
     clock.tick(60)
