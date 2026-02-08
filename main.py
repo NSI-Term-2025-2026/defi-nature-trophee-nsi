@@ -22,7 +22,7 @@ pygame.init()
 # ============================================================
 
 class Animaux:
-    """Carte Animal : nom + 3 caractéristiques."""
+    """Carte Animal : nom + 3 caractéristiques. + lien du fichier image"""
     def __init__(self, nom, poids, longueur, longevite):
         self.nom = nom
         self.poids = poids
@@ -364,7 +364,7 @@ apropos_texte = [
     "Robot intelligent : observe les cartes jouées, calcule une médiane",
     "et choisit la caractéristique la plus avantageuse.",
     "",
-    "Évolutions possibles : sons, musiques, nouvelles cartes, etc."
+    "Retrouvez notre projet sur github : https://github.com/AntoCheMaestro :)"
 ]
 afficher_apropos = False
 
@@ -372,7 +372,8 @@ afficher_apropos = False
 # ========================= UTILITAIRES =======================
 # ============================================================
 
-def wrap_lines(text, font, max_width):
+def wrap_lines(text, font, max_width):  
+    """Utilitaires pour les textes du menu hamburger"""
     words = text.split(" ")
     lines, cur = [], ""
     for w in words:
@@ -407,6 +408,16 @@ def draw_card(surface, joueur, est_actif, highlight=False):
 
     surface.blit(police.render(joueur.nom, True, NOIR), (30, 28))
     surface.blit(police.render(carte.nom, True, NOIR), (30, 62))
+    
+    # MODE DEBUG : carte adverse normalement cachée
+    if game is not None and joueur is not game.joueur_actif:
+        txt_debug = police_petite.render(
+            "(Mode debug : carte normalement cachée)",
+            True,
+            (120, 120, 120)  # gris discret
+        )
+        surface.blit(txt_debug, (30, 90))
+
 
     surface.blit(police.render(f"Poids : {carte.poids}", True, NOIR), (30, 120))
     surface.blit(police.render(f"Longueur : {carte.longueur}", True, NOIR), (30, 152))
