@@ -47,7 +47,7 @@ class Joueur:
         return self.cartes.pop()
 
     def ajouter_carte(self, carte):
-        # Réinsertion aléatoire 
+        # Réinsertion aléatoire
         self.cartes.insert(random.randint(0, len(self.cartes)), carte)
 
     def est_vaincu(self):
@@ -228,12 +228,12 @@ def creer_partie(mode, prenom="Humain"):
 # ======================= PYGAME / UI =========================
 # ============================================================
 
-# Fenêtre 
+# Fenêtre
 LARGEUR, HAUTEUR = 900, 600
 fenetre = pygame.display.set_mode((LARGEUR, HAUTEUR))
 pygame.display.set_caption("Défi Nature")
 
-# Couleurs 
+# Couleurs
 FOND = (30, 34, 40)
 PANEL = (42, 47, 54)
 VERT_NATURE = (58, 125, 90)
@@ -253,7 +253,7 @@ police_petite = pygame.font.SysFont("arial", 16)
 HAUT_H = 90
 GAUCHE_W = 180
 
-# Surfaces 
+# Surfaces
 frame_haut = pygame.Surface((LARGEUR, HAUT_H))
 frame_gauche = pygame.Surface((GAUCHE_W, HAUTEUR - HAUT_H))
 frame_jeu = pygame.Surface((LARGEUR - GAUCHE_W, HAUTEUR - HAUT_H))
@@ -273,7 +273,7 @@ frame_j2 = pygame.Surface(((frame_jeu.get_width() - 20) // 2, frame_jeu.get_heig
 # - victory.wav
 
 # initialisation du module de pygame permettant de gerer les sons
-pygame.mixer.init() 
+pygame.mixer.init()
 
 def charger_son(path):
     try:
@@ -372,7 +372,7 @@ afficher_apropos = False
 # ========================= UTILITAIRES =======================
 # ============================================================
 
-def wrap_lines(text, font, max_width):  
+def wrap_lines(text, font, max_width):
     """Utilitaires pour les textes du menu hamburger"""
     words = text.split(" ")
     lines, cur = [], ""
@@ -388,6 +388,40 @@ def wrap_lines(text, font, max_width):
         lines.append(cur)
     return lines
 
+# ------------------------------------------------------------
+# Cache images cartes (robuste + performant)
+# ------------------------------------------------------------
+IMAGES_CACHE = {}
+
+def charger_image_carte(path, target_w, target_h):
+    """
+    Charge et redimensionne une image de carte pour tenir dans (target_w, target_h)
+    en conservant le ratio. Retourne une Surface prête à blitter, ou None si échec.
+    Cache interne par (path, target_w, target_h).
+    """
+    key = (path, target_w, target_h)
+    if key in IMAGES_CACHE:
+        return IMAGES_CACHE[key]
+
+    try:
+        img = pygame.image.load(path).convert_alpha()
+        iw, ih = img.get_width(), img.get_height()
+        if iw <= 0 or ih <= 0:
+            IMAGES_CACHE[key] = None
+            return None
+
+        # fit dans la zone sans déformation
+        scale = min(target_w / iw, target_h / ih)
+        new_w = max(1, int(iw * scale))
+        new_h = max(1, int(ih * scale))
+        img_scaled = pygame.transform.smoothscale(img, (new_w, new_h))
+
+        IMAGES_CACHE[key] = img_scaled
+        return img_scaled
+    except Exception:
+        IMAGES_CACHE[key] = None
+        return None
+
 
 def draw_card(surface, joueur, est_actif, highlight=False):
     # base
@@ -401,29 +435,61 @@ def draw_card(surface, joueur, est_actif, highlight=False):
 
     carte = joueur.carte_visible()
     if carte is None:
-        surface.blit(police.render(joueur.nom, True, NOIR), (30, 28))
+        # Nom joueur (overlay léger)
+        name = police.render(joueur.nom, True, NOIR)
+        surface.blit(name, (30, 28))
+
         surface.blit(police.render("Plus de cartes", True, NOIR), (30, 120))
-        surface.blit(police.render(f"Cartes : {len(joueur.cartes)}", True, NOIR), (30, 235))
+
+        # Indication du nombre de cartes : déplacée en bas (hors carte)
+        txt_count = police_petite.render(f"Cartes : {len(joueur.cartes)}", True, BLANC)
+        surface.blit(txt_count, (20, surface.get_height() - 28))
         return
 
-    surface.blit(police.render(joueur.nom, True, NOIR), (30, 28))
-    surface.blit(police.render(carte.nom, True, NOIR), (30, 62))
-    
-    # MODE DEBUG : carte adverse normalement cachée
-    if game is not None and joueur is not game.joueur_actif:
-        txt_debug = police_petite.render(
-            "(Mode debug : carte normalement cachée)",
-            True,
-            (120, 120, 120)  # gris discret
-        )
-        surface.blit(txt_debug, (30, 90))
+    # ----------------------------------------------------------------
+    # Affichage "carte complète" (image) centrée dans zone_carte
+    # ----------------------------------------------------------------
+    img = charger_image_carte(carte.path_image, zone_carte.width, zone_carte.height)
 
+    if img is not None:
+        r = img.get_rect()
+        r.center = zone_carte.center
+        surface.blit(img, r.topleft)
+    else:
+        # fallback robuste si image manquante
+        pygame.draw.rect(surface, CARTE_COL, zone_carte, border_radius=12)
+        pygame.draw.rect(surface, NOIR, zone_carte, width=2, border_radius=12)
+        surface.blit(police.render(joueur.nom, True, NOIR), (30, 28))
+        surface.blit(police.render(carte.nom, True, NOIR), (30, 62))
+        surface.blit(police.render("Image introuvable", True, NOIR), (30, 120))
 
-    surface.blit(police.render(f"Poids : {carte.poids}", True, NOIR), (30, 120))
-    surface.blit(police.render(f"Longueur : {carte.longueur}", True, NOIR), (30, 152))
-    surface.blit(police.render(f"Longévité : {carte.longevite}", True, NOIR), (30, 184))
+    # ----------------------------------------------------------------
+    # Bandeau info joueur (léger) + message debug carte adverse
+    # ----------------------------------------------------------------
+    # Petit bandeau semi-transparent en haut à gauche (évite de trop masquer la carte)
+    bandeau = pygame.Surface((zone_carte.width, 30), pygame.SRCALPHA)
+    bandeau.fill((0, 0, 0, 90))
+    surface.blit(bandeau, (zone_carte.x, zone_carte.y))
 
-    surface.blit(police.render(f"Cartes : {len(joueur.cartes)}", True, NOIR), (30, 235))
+    surface.blit(police_petite.render(joueur.nom, True, BLANC), (zone_carte.x + 10, zone_carte.y + 7))
+
+    # Message debug uniquement sur la carte adverse (donc change à chaque manche)
+    try:
+        if game is not None and joueur is not game.joueur_actif:
+            dbg = police_petite.render("(Mode debug : en vrai on ne voit pas la carte)", True, BOUTON_ACTIF)
+            # petit fond pour lisibilité
+            dbg_bg = pygame.Surface((dbg.get_width() + 12, dbg.get_height() + 6), pygame.SRCALPHA)
+            dbg_bg.fill((0, 0, 0, 140))
+            surface.blit(dbg_bg, (zone_carte.x + 10, zone_carte.y + 36))
+            surface.blit(dbg, (zone_carte.x + 16, zone_carte.y + 39))
+    except Exception:
+        pass
+
+    # ----------------------------------------------------------------
+    # Indication du nombre de cartes : déplacée en bas (hors carte)
+    # ----------------------------------------------------------------
+    txt_count = police_petite.render(f"Cartes : {len(joueur.cartes)}", True, BLANC)
+    surface.blit(txt_count, (20, surface.get_height() - 28))
 
 
 def dessiner_bouton(surface, rect, texte, actif=True):
