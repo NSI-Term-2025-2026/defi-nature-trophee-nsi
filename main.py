@@ -9,7 +9,7 @@ Architecture :
 - L'UI affiche l'état du jeu et traduit les clics en actions.
 - Cela rend le projet plus robuste et facile à faire évoluer (sons, animations, etc.).
 """
-
+from cerveau import *
 import pygame
 import sys
 import random
@@ -70,6 +70,13 @@ def choix_robot_aleatoire():
     """Robot A : choix d'une caractéristique au hasard."""
     return random.choice(["poids", "longueur", "longevite"])
 
+def choix_robot_aleatoire_premiere_caracteristique():
+    """
+    Robot Naif: Choix de la premiere caracteristique
+    """
+    return "poids"
+
+
 
 def choix_robot_intelligent(carte, historique):
     """
@@ -82,6 +89,54 @@ def choix_robot_intelligent(carte, historique):
     poids_m = np.median([c.poids for c in historique])
     longueur_m = np.median([c.longueur for c in historique])
     longevite_m = np.median([c.longevite for c in historique])
+
+    scores = {
+        "poids": carte.poids / poids_m if poids_m > 0 else 0,
+        "longueur": carte.longueur / longueur_m if longueur_m > 0 else 0,
+        "longevite": carte.longevite / longevite_m if longevite_m > 0 else 0
+    }
+    return max(scores, key=scores.get)
+
+def choix_robot_intelligent_moyenne(carte, historique):
+    """
+    Robot I : compare sa carte à une valeur de référence (médiane) issue
+    des cartes déjà jouées, et choisit la caractéristique la plus "forte" relativement.
+    """
+    if not historique:
+        return choix_robot_aleatoire()
+
+    poids_m = np.mean([c.poids for c in historique])
+    longueur_m = np.mean([c.longueur for c in historique])
+    longevite_m = np.mean([c.longevite for c in historique])
+
+    scores = {
+        "poids": carte.poids / poids_m if poids_m > 0 else 0,
+        "longueur": carte.longueur / longueur_m if longueur_m > 0 else 0,
+        "longevite": carte.longevite / longevite_m if longevite_m > 0 else 0
+    }
+    return max(scores, key=scores.get)
+
+def choix_robot_triche_absolue(carte_jouee,carte_subie):
+    if carte_jouee.poids > carte_subie.poids:
+        return 'poids'
+    elif carte_jouee.longueur > carte_subie.longueur:
+        return 'longueur'
+    elif carte_jouee.longevite > carte_subie.longevite:
+        return 'longevite'
+    else:
+        return choix_robot_aleatoire()
+
+def choix_robot_intelligent(carte, liste_cartes_totales):
+    """
+    Robot I : compare sa carte à une valeur de référence (médiane) issue
+    des cartes déjà jouées, et choisit la caractéristique la plus "forte" relativement.
+    """
+    if not historique:
+        return choix_robot_aleatoire()
+
+    poids_m = np.median([c.poids for c in liste_cartes_totales])
+    longueur_m = np.median([c.longueur for c in liste_cartes_totales])
+    longevite_m = np.median([c.longevite for c in liste_cartes_totales])
 
     scores = {
         "poids": carte.poids / poids_m if poids_m > 0 else 0,
