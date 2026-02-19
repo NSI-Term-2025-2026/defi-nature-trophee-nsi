@@ -63,6 +63,7 @@ defi_nature_trophee_nsi/
 │
 └── strategies/
     └── strategies.txt       # Liste des stratégies de robots
+```
 
 ## 🛠️ Installation des dépendances
 
