@@ -1,49 +1,122 @@
-# 🐾 Défi Nature — Projet NSI (Terminale) | Jeu de cartes en Python (Pygame)
+# 🐾 Défi Nature — Projet NSI (Terminale)
+## Recréation du jeu de société avec IA et analyse expérimentale
 
-## 📌 Présentation du projet
-Ce dépôt contient une **recréation du jeu de société Défi Nature** sous forme de jeu vidéo en **Python** (interface **Pygame**).
-Deux joueurs (humains ou robots) s’affrontent avec des cartes “Animaux” contenant 3 caractéristiques :
+---
+
+## 📌 Présentation
+
+Ce dépôt contient une **recréation numérique du jeu de société _Défi Nature_**, développée en **Python**, avec une interface graphique réalisée en **Pygame**.
+
+Le projet ne se limite pas à une simple adaptation visuelle :  
+il intègre :
+
+- 🎮 Une interface interactive complète  
+- 🧠 Plusieurs stratégies de robots (IA)  
+- 📊 Un module de simulations statistiques  
+- 🧱 Une architecture modulaire (moteur indépendant de l’interface)  
+
+L’objectif est de reproduire fidèlement le jeu tout en explorant la **prise de décision algorithmique**.
+
+---
+
+## 🎴 Règles du jeu
+
+Chaque carte représente un animal avec trois caractéristiques :
 
 - **Poids**
 - **Longueur**
 - **Longévité**
 
-À chaque manche, le joueur actif choisit une caractéristique, puis on compare les valeurs :
-✅ **La valeur strictement la plus grande gagne**  
-⚠️ **En cas d’égalité, le joueur actif perd la manche** (règle volontaire pour éviter les matchs nuls).
+### Déroulement d’une manche
+
+1. Les cartes sont mélangées et distribuées équitablement.  
+2. Le joueur actif révèle sa carte visible (dernière carte du tas).  
+3. Il choisit une caractéristique.  
+4. Les valeurs sont comparées.  
+5. La valeur **strictement supérieure** gagne la manche.  
+6. En cas d’égalité, le joueur actif perd.  
+7. Le gagnant récupère la carte adverse.  
+8. Les cartes sont réinsérées aléatoirement dans le tas.  
+9. La partie se termine lorsqu’un joueur n’a plus de cartes.  
+
+⚠️ La règle d’égalité rend le choix stratégique plus risqué.
 
 ---
 
 ## 🚀 Fonctionnalités principales
 
 ### 🎮 Gameplay
-- Modes de jeu :
-  - **Joueur vs Joueur**
-  - **Joueur vs Robot (aléatoire)**
-  - **Joueur vs Robot (intelligent)**
-- Réinsertion des cartes de façon **aléatoire** pour éviter les boucles trop prévisibles
-- Affichage complet : cartes, tours, résultats de manche, nombre de cartes restantes
-- Menu “hamburger” (Rejouer / Options / Règles / À propos / Quitter)
 
-### 🧠 IA (Robots)
-Plusieurs stratégies sont disponibles (et documentées) :
-- **Aléatoire** : choisit une caractéristique au hasard
-- **Première caractéristique** : joue toujours “poids”
-- **Triche (max)** : connaît sa carte + la carte adverse (choisit une caractéristique gagnante si possible)
-- **Intermédiaire (stats)** : compare sa carte à une **moyenne** ou une **médiane** de l’historique
-- **Variante globale** : connaît toutes les cartes du jeu (médiane “globale”)
-
-➡️ Détails dans : `strategies/strategies.txt`
+- Modes disponibles :
+  - Joueur vs Joueur  
+  - Joueur vs Robot  
+- Interface complète :
+  - Affichage des cartes  
+  - Animation de fin de manche  
+  - Historique des manches  
+  - Menu hamburger (Rejouer / Options / Règles / À propos / Quitter)  
+- Sons (clics, victoire)  
+- Options (volume, affichage debug)
 
 ---
 
-## 🧩 Architecture (séparation cerveau / interface)
-Le projet est organisé pour séparer :
-- ✅ **Le moteur du jeu (règles, joueurs, robots, données)** → `cerveau.py`
-- ✅ **L’interface graphique Pygame** → `game_pygame.py`
-- ✅ **Le point d’entrée (lancement du jeu)** → `main.py`
+## 🧠 Intelligence Artificielle
 
-🎯 Objectif important : pouvoir faire tourner des **simulations / statistiques** sans dépendre de Pygame (utile sur un PC où Pygame n’est pas installé).
+Plusieurs niveaux d’intelligence sont implémentés afin de comparer différentes approches algorithmiques.
+
+### 🔹 Stratégies naïves
+
+- Choix aléatoire  
+- Toujours la même caractéristique  
+
+### 🔹 Stratégies heuristiques
+
+- Comparaison à la moyenne  
+- Comparaison à la médiane  
+- Analyse de l’historique des cartes jouées  
+
+### 🔹 Approches probabilistes
+
+- Estimation des chances de victoire  
+- Simulation de fins de partie  
+- Méthodes de type Monte Carlo  
+
+🎯 L’intérêt principal du projet réside dans la **comparaison expérimentale entre ces stratégies**.
+
+---
+
+## 📊 Module statistique
+
+Le fichier `stats.py` permet :
+
+- De comparer automatiquement deux stratégies  
+- De lancer des centaines / milliers de parties  
+- D’obtenir :
+  - Winrate (% de victoire)  
+  - Nombre moyen de manches  
+  - Comparaison vitesse / efficacité  
+- D’utiliser des **seeds fixes** pour garantir la reproductibilité  
+- D’enregistrer les résultats dans `data/results.txt`  
+
+Cette séparation permet de faire des simulations **sans dépendre de Pygame**.
+
+---
+
+## 🧩 Architecture du projet
+
+Le projet est organisé selon une séparation claire des responsabilités :
+
+- `cerveau.py` → moteur du jeu (règles, classes, IA)  
+- `game_pygame.py` → interface graphique uniquement  
+- `stats.py` → simulations statistiques  
+- `main.py` → point d’entrée  
+- `data/animaux.csv` → base de données des cartes  
+
+Cette organisation permet :
+
+- Des tests indépendants de l’interface  
+- Une maintenance plus simple  
+- Une meilleure lisibilité du code  
 
 ---
 
@@ -52,23 +125,21 @@ Le projet est organisé pour séparer :
 ```text
 defi_nature_trophee_nsi/
 │
-├── main.py                  # Point d'entrée (lance le jeu)
-├── cerveau.py               # Moteur du jeu : règles + robots + données
-├── game_pygame.py           # Interface Pygame (UI uniquement)
-├── stats.py                 # Menu de statistiques entre choix robots
-├── requirements.txt          
+├── main.py
+├── cerveau.py
+├── game_pygame.py
+├── stats.py
+├── requirements.txt
 │
-├── assets/                  # Ressources du jeu
-│   ├── images/animaux/      # Images des cartes (nommage = nom_animal.png)
-│   └── sounds/              # Sons (click, victory, etc.)
+├── data/
+│   ├── animaux.csv
+│   └── results.txt
+│
+├── assets/
+│   ├── images/animaux/
+│   └── sounds/
 │
 └── strategies/
-    └── strategies.txt       # Liste des stratégies de robots
+    └── strategies.txt
 ```
 
-## 🛠️ Installation des dépendances
-
-Avant de lancer le projet, installez les bibliothèques nécessaires à l'aide du fichier `requirements.txt` :
-
-```bash
-pip install -r requirements.txt 
