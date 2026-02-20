@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Défi Nature – Projet NSI 2026</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <div class="hero-content container">
+      <div class="badge">Trophée NSI 2026</div>
+      <h1>Défi Nature</h1>
+      <p class="subtitle">
+        Recréation numérique d’un jeu de société : duel stratégique, interface Pygame, IA, et analyse statistique.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn-primary" href="#regles">Voir les règles</a>
+        <a class="btn-secondary" href="https://github.com/NSI-Term-2025-2026/defi_nature_trophee_nsi" target="_blank" rel="noreferrer">
+          Code GitHub
+        </a>
+      </div>
+
+      <div class="hero-metrics">
+        <div class="metric">
+          <div class="metric-value">🎴</div>
+          <div class="metric-label">Cartes d’animaux (CSV)</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">🤖</div>
+          <div class="metric-label">Bots multi-stratégies</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">📊</div>
+          <div class="metric-label">Simulations & comparaisons</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= NAV ================= -->
+  <nav class="nav">
+    <div class="nav-inner container">
+      <a href="#concept">Concept</a>
+      <a href="#regles">Règles</a>
+      <a href="#interface">Interface</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#ia">IA</a>
+      <a href="#stats">Statistiques</a>
+      <a href="#tech">Tech</a>
+    </div>
+  </nav>
+
+  <!-- ================= CONCEPT ================= -->
+  <section id="concept" class="section">
+    <div class="container">
+      <h2>Le concept</h2>
+      <p class="lead">
+        Défi Nature est l’adaptation numérique du jeu de société : chaque carte représente un animal avec trois
+        caractéristiques — <strong>poids</strong>, <strong>longueur</strong> et <strong>longévité</strong>.
+      </p>
+      <p>
+        L’objectif est de <strong>récupérer toutes les cartes</strong> de l’adversaire en choisissant intelligemment la
+        caractéristique à comparer à chaque manche. Le jeu est à la fois simple à comprendre et riche en stratégie
+        (risque, information incomplète, hasard dû au mélange et à la réinsertion).
+      </p>
+      <p class="muted">
+        Le projet vise à recréer fidèlement l’expérience du jeu de société, tout en y intégrant une réflexion
+        algorithmique sur la prise de décision (IA) et une démarche expérimentale (statistiques).
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>🎴 Cartes & données</h3>
+          <p>
+            Les animaux sont chargés depuis un fichier <strong>CSV</strong> : on peut ajouter/retirer des cartes sans
+            modifier le code. Les images des cartes sont affichées dans l’interface.
+          </p>
+        </div>
+        <div class="card">
+          <h3>⚔️ Duel stratégique</h3>
+          <p>
+            À chaque tour, un joueur choisit une caractéristique. La valeur la plus élevée gagne la manche.
+            La règle d’égalité (strictement supérieur) rend les choix plus risqués.
+          </p>
+        </div>
+        <div class="card">
+          <h3>📊 Analyse</h3>
+          <p>
+            Un mode “stats” compare les stratégies sur un grand nombre de parties, avec des <strong>seeds</strong>
+            reproductibles, pour mesurer la performance de chaque IA.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= REGLES ================= -->
+  <section id="regles" class="section dark">
+    <div class="container">
+      <h2>Règles et déroulement d’une partie</h2>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Début de partie</h3>
+          <ul class="list">
+            <li>Les cartes sont <strong>mélangées</strong> puis <strong>distribuées</strong> équitablement.</li>
+            <li>Chaque joueur possède une pile : la <strong>carte visible</strong> est la dernière du tas.</li>
+            <li>Le joueur actif commence (humain ou robot selon le mode).</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Une manche (un tour)</h3>
+          <ol class="rules">
+            <li>Le joueur actif choisit une caractéristique : poids / longueur / longévité.</li>
+            <li>On compare les valeurs de la carte active et de la carte adverse.</li>
+            <li>La valeur <strong>strictement supérieure</strong> gagne la manche.</li>
+            <li>En cas d’égalité, le joueur actif <strong>perd</strong> (règle du jeu).</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:18px;">
+        <div class="panel">
+          <h3>Gain et réinsertion</h3>
+          <ul class="list">
+            <li>Le gagnant récupère la carte adverse.</li>
+            <li>Les cartes sont <strong>réinsérées aléatoirement</strong> dans le tas, ce qui ajoute de l’incertitude.</li>
+            <li>Le tour passe ensuite à l’autre joueur.</li>
+          </ul>
+        </div>
+
+        <div class="panel accent">
+          <h3>Fin de partie</h3>
+          <ul class="list">
+            <li>Un joueur est vaincu lorsqu’il n’a <strong>plus de cartes</strong>.</li>
+            <li>L’interface affiche le gagnant et permet de rejouer.</li>
+            <li>Un historique des dernières manches peut être affiché (mode debug).</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="note">
+        Cette règle d’égalité augmente l’intérêt stratégique : une décision “à risque” peut coûter la manche immédiatement.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= INTERFACE ================= -->
+  <section id="interface" class="section">
+    <div class="container">
+      <h2>Interface graphique (Pygame)</h2>
+      <p class="lead">
+        L’interface reprend les codes visuels du jeu : fond sombre, panneaux, cartes claires, accent vert nature et bouton actif doré.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>🧭 Navigation</h3>
+          <p>
+            Menu hamburger : rejouer, options, règles, à propos, quitter. Écrans dédiés (start, jeu, victoire).
+          </p>
+        </div>
+        <div class="card">
+          <h3>🎛 Options</h3>
+          <p>
+            Volume des sons, affichage de la carte adverse (mode debug), overlays (règles / à propos / options).
+          </p>
+        </div>
+        <div class="card">
+          <h3>📌 Ergonomie</h3>
+          <p>
+            Boutons clairs pour choisir la caractéristique, raccourcis clavier 1/2/3, animation de fin de manche.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ARCHITECTURE ================= -->
+  <section id="architecture" class="section dark">
+    <div class="container">
+      <h2>Architecture logicielle</h2>
+      <p class="lead">
+        Le projet est conçu pour être maintenable : la logique du jeu est séparée de l’interface et des simulations.
+      </p>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Modules principaux</h3>
+          <ul class="list">
+            <li><strong>cerveau.py</strong> : règles, classes (Animal/Joueur/GameState), stratégies IA</li>
+            <li><strong>game_pygame.py</strong> : affichage et interactions utilisateur</li>
+            <li><strong>stats.py</strong> : comparaison automatique des stratégies (sans pygame)</li>
+            <li><strong>data/animaux.csv</strong> : données des cartes (chargement robuste)</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Choix de conception</h3>
+          <ul class="list">
+            <li>Le moteur peut tourner sans interface → simulations rapides et reproductibles.</li>
+            <li>Historique des manches enregistré → analyse et affichage dans l’UI.</li>
+            <li>Chargement CSV → ajout d’animaux sans toucher au code.</li>
+            <li>Invariants internes → éviter duplication/perte de cartes.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= IA ================= -->
+  <section id="ia" class="section">
+    <div class="container">
+      <h2>Intelligence Artificielle</h2>
+      <p class="lead">
+        Le projet intègre plusieurs stratégies de robots afin d’étudier différentes approches de prise de décision.
+      </p>
+      <p>
+        L’objectif n’est pas de “faire une IA magique”, mais de comparer des idées d’algorithmes :
+        hasard, règles simples, heuristiques basées sur l’historique, et approches probabilistes.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>🎲 Stratégies naïves</h3>
+          <ul class="list">
+            <li>Choix aléatoire</li>
+            <li>Toujours la même caractéristique</li>
+          </ul>
+          <p class="muted">Baselines indispensables pour mesurer le gain des autres méthodes.</p>
+        </div>
+
+        <div class="card">
+          <h3>📊 Heuristiques</h3>
+          <ul class="list">
+            <li>Moyenne / médiane sur l’historique</li>
+            <li>Choix via ratio (force relative)</li>
+            <li>Exploitation des cartes déjà jouées</li>
+          </ul>
+          <p class="muted">Utilisent les informations observées pendant la partie.</p>
+        </div>
+
+        <div class="card">
+          <h3>🔬 Probabiliste</h3>
+          <ul class="list">
+            <li>Estimation de chances de victoire</li>
+            <li>Simulation de fins de partie</li>
+            <li>Approches de type Monte Carlo</li>
+          </ul>
+          <p class="muted">Une famille de stratégies parmi d’autres, utile pour comparer.</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Objectif : comparer les approches</div>
+        <p>
+          Les stratégies sont évaluées de manière expérimentale : même nombre de parties, seeds contrôlées,
+          et mesures identiques (winrate, vitesse de victoire).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <section id="stats" class="section dark">
+    <div class="container">
+      <h2>Analyse statistique et expérimentation</h2>
+      <p class="lead">
+        Un script de simulations permet de lancer automatiquement des match-ups entre stratégies.
+      </p>
+      <p>
+        Cette partie du projet est essentielle : elle transforme un simple “robot” en démarche scientifique.
+        Les expériences sont reproductibles grâce à l’utilisation de seeds, et les résultats sont enregistrés
+        dans des fichiers (logs).
+      </p>
+
+      <div class="grid-3">
+        <div class="panel">
+          <h3>📈 Winrate</h3>
+          <p>Pourcentage de victoires sur un grand nombre de parties.</p>
+        </div>
+        <div class="panel">
+          <h3>⏱ Vitesse</h3>
+          <p>Nombre moyen de manches nécessaires pour gagner (efficacité).</p>
+        </div>
+        <div class="panel">
+          <h3>🔁 Reproductibilité</h3>
+          <p>Seeds fixes pour relancer les mêmes expériences et comparer proprement.</p>
+        </div>
+      </div>
+
+      <div class="code-box">
+<pre><code># Exemple (simplifié) : comparaison A vs B sur N parties
+res = comparer_deux_strategies(A, B, n_games=1000, seed=12345)
+logs_result(res)  # écrit dans data/results.txt</code></pre>
+      </div>
+
+      <p class="note">
+        Les statistiques ne remplacent pas l’intuition : elles servent à confirmer (ou contredire) une impression de jeu.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= TECH ================= -->
+  <section id="tech" class="section">
+    <div class="container">
+      <h2>Technologies et outils</h2>
+
+      <div class="grid-3">
+        <div class="card">Python 3</div>
+        <div class="card">Pygame</div>
+        <div class="card">NumPy</div>
+        <div class="card">CSV (données cartes)</div>
+        <div class="card">POO (architecture)</div>
+        <div class="card">GitHub Pages</div>
+      </div>
+
+      <div class="footer-actions">
+        <a class="btn-primary" href="#concept">Remonter</a>
+        <a class="btn-secondary" href="https://github.com/NSI-Term-2025-2026/defi_nature_trophee_nsi" target="_blank" rel="noreferrer">
+          Voir le repository
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-line">
+        <span>Défi Nature – Projet NSI 2026</span>
+        <span class="footer-sep">•</span>
+        <span>Recréation du jeu + IA + Stats</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
