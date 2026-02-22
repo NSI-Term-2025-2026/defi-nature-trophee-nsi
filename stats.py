@@ -28,8 +28,11 @@ from cerveau import (
     choix_robot_intelligent,
     choix_robot_intelligent_moyenne,
     choix_robot_triche_absolue,
-    choix_robot_intelligent_triche,   # corrigée dans cerveau.py
-)
+    choix_robot_intelligent_triche,
+    choix_robot_monte_carlo_random,
+    choix_robot_monte_carlo_median)
+
+NOMBRE_PARTIES_EFFECTUE = 0
 
 # ============================================================
 # ======================= WRAPPERS STRATEGIES =================
@@ -104,6 +107,13 @@ def strat_mean_hist(game: GameState) -> str:
         return _safe_carac(choix_robot_aleatoire())
     return _safe_carac(choix_robot_intelligent_moyenne(carte, game.historique_cartes))
 
+def strat_monte_carlo_random(game: GameState) -> str:
+    return _safe_carac(choix_robot_monte_carlo_random(game, essais=30))
+
+
+def strat_monte_carlo_median(game: GameState) -> str:
+    return _safe_carac(choix_robot_monte_carlo_median(game, essais=30))
+
 
 # -----------------------
 # Stratégies "fortes / triche"
@@ -144,6 +154,8 @@ STRATEGIES: List[Strategie] = [
     Strategie("FirstStat(poids)", strat_first),
     Strategie("MedianRatio(hist)", strat_median_hist),
     Strategie("MeanRatio(hist)", strat_mean_hist),
+    Strategie("MonteCarlo_random", strat_monte_carlo_random),
+    Strategie("MonteCarlo_median", strat_monte_carlo_median),
     Strategie("CheatAbsolute(see both)", strat_cheat_absolute),
     Strategie("CheatMedianAllCards(median global)", strat_cheat_median_allcards),
 ]
@@ -192,6 +204,7 @@ def jouer_une_partie(
     max_rounds_guard :
     - garde-fou anti-boucle infinie (normalement inutile, mais utile en dev).
     """
+    global NOMBRE_PARTIES_EFFECTUE
     game = creer_partie_bot_vs_bot(seed=seed)
     rounds = 0
 
@@ -216,6 +229,9 @@ def jouer_une_partie(
     if not game.terminee or game.gagnant is None:
         winner = random.choice(["BotA", "BotB"])
         return winner, rounds
+    # TEST DEBUG 
+    NOMBRE_PARTIES_EFFECTUE += 1
+    print('Partie terminee: ', NOMBRE_PARTIES_EFFECTUE)
 
     return game.gagnant.nom, rounds
 
@@ -235,7 +251,7 @@ def comparer_deux_strategies(
     - avg_rounds_when_A_wins : manches moyennes seulement parmi les victoires de A
     - avg_rounds_when_B_wins : manches moyennes seulement parmi les victoires de B
     """
-
+    global NOMBRE_PARTIES_EFFECTUE
     wins_a = 0
     wins_b = 0
 
@@ -266,6 +282,7 @@ def comparer_deux_strategies(
         """Moyenne simple; renvoie NaN si liste vide."""
         return (sum(lst) / len(lst)) if lst else float("nan")
 
+    NOMBRE_PARTIES_EFFECTUE = 0
     return {
         "A": strat_a.nom,
         "B": strat_b.nom,
@@ -368,7 +385,7 @@ def run_stats() -> None:
     print()
 
     # Paramètres principaux :
-    N = 1000     # nombre de parties par match-up
+    N = 100     # nombre de parties par match-up
     SEED = 12345 # seed de base pour la reproductibilité
 
     comparer_toutes_strategies(n_games=N, seed=SEED)
@@ -376,3 +393,20 @@ def run_stats() -> None:
 
 if __name__ == "__main__":
     run_stats()
+
+
+# COMMANDES EN CONSOLE POUR TESTS
+"""
+Comparer deux strategies: Ici Monte carlo random et median 
+-print(comparer_deux_strategies(STRATEGIES[4],STRATEGIES[2],75,12345))
+
+print(comparer_deux_strategies(STRATEGIES[4],STRATEGIES[2],500,12345))
+{'A': 'MonteCarlo_random', 'B': 'MedianRatio(hist)', 'n_games': 500, 'wins_A': 237, 'wins_B': 263, 
+'winrate_A_pct': 47.4, 'winrate_B_pct': 52.6, 
+'avg_rounds_overall': 59.906, 'avg_rounds_when_A_wins': 62.55696202531646, 'avg_rounds_when_B_wins': 57.5171102661597}
+
+print(comparer_deux_strategies(STRATEGIES[4],STRATEGIES[2],1000,12345))
+{'A': 'MonteCarlo_random', 'B': 'MedianRatio(hist)', 'n_games': 1000, 'wins_A': 476, 'wins_B': 524, 
+'winrate_A_pct': 47.6, 'winrate_B_pct': 52.4, 
+'avg_rounds_overall': 59.63, 'avg_rounds_when_A_wins': 62.1890756302521, 'avg_rounds_when_B_wins': 57.30534351145038}
+"""
