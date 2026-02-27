@@ -143,3 +143,17 @@ defi_nature_trophee_nsi/
     └── strategies.txt
 ```
 
+## 🎮 Jouer au jeu
+
+Si tu veux jouer à **Défi Nature** sans installer Python ni cloner le dépôt :
+
+1. Va sur la page des **Releases** du projet (onglet *Releases* en haut du dépôt GitHub).  
+2. Télécharge le fichier **exécutable Windows (`.exe`)** correspondant à la dernière version publiée.  
+   - Par exemple : `DefiNature-v1.0.0.exe`
+3. Place ce fichier `.exe` dans un dossier avec les dossiers `assets/` et `data/` si ceux-ci sont fournis séparément dans l’archive de la release.
+4. Double-clique sur l’exécutable pour lancer le jeu directement sur ton ordinateur — il n’est **pas nécessaire d’installer Python** ni de taper des commandes dans un terminal.
+
+👉 Tu peux aussi ajouter un lien direct vers la dernière release dans le README, par exemple :
+
+```markdown
+https://github.com/NSI-Term-2025-2026/defi-nature-trophee-nsi/releases/latest
