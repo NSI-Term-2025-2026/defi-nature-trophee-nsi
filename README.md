@@ -133,7 +133,7 @@ defi_nature_trophee_nsi/
 │
 ├── data/
 │   ├── animaux.csv
-│   └── results.txt
+│   └── results.csv
 │
 ├── assets/
 │   ├── images/animaux/
@@ -157,3 +157,4 @@ Si tu veux jouer à **Défi Nature** sans installer Python ni cloner le dépôt 
 
 ```markdown
 https://github.com/NSI-Term-2025-2026/defi-nature-trophee-nsi/releases/latest
+```
