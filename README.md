@@ -133,7 +133,7 @@ defi_nature_trophee_nsi/
 │
 ├── data/
 │   ├── animaux.csv
-│   └── results.txt
+│   └── results.csv
 │
 ├── assets/
 │   ├── images/animaux/
