@@ -31,7 +31,7 @@ class Animaux:
         self.poids = poids
         self.longueur = longueur
         self.longevite = longevite
-        self.path_image = "assets/images/animaux/" + self.nom + ".png"
+        self.path_image = "assets/images/animaux/" + self.nom + ".jpg"
 
 
 class Joueur:
