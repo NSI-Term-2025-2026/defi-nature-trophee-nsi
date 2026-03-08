@@ -459,22 +459,22 @@ def charger_animaux_csv(path_csv):
 
 
 LISTE_ANIMAUX = [
-    Animaux("aigle_royal", 4.8, 84, 25),
-    Animaux("cobra_royal", 10, 400, 22),
-    Animaux("corail_rouge", 2, 40, 60),
-    Animaux("dragon_de_komodo", 165, 310, 53),
-    Animaux("elephant_d_afrique", 5000, 600, 65),
-    Animaux("lion_d_afrique", 189, 210, 18),
-    Animaux("loup_rouge", 25, 110, 13),
-    Animaux("merou_golfe", 90, 198, 48),
-    Animaux("panda_geant", 97, 170, 22),
-    Animaux("panda_roux", 5, 57, 10),
-    Animaux("protee_anguillard", 0.02, 25, 69),
-    Animaux("raie_manta", 1500, 550, 19),
-    Animaux("requin_marteau_halicorne", 152, 330, 35),
-    Animaux("tapir", 200, 212, 30),
-    Animaux("tigre_de_siberie", 300, 230, 17),
-    Animaux("tortue_verte", 175, 100, 70),
+    Animaux("aigle_royal", 4.8, 84, 25, "Grand rapace aux longues ailes capable de repérer ses proies de loin. En France il vit surtout dans les massifs montagneux et sa population augmente."),
+    Animaux("cobra_royal", 10, 400, 22, "Plus long serpent venimeux du monde pouvant tuer un éléphant. Il intimide ses adversaires en dressant son corps et en déployant son capuchon."),
+    Animaux("corail_rouge", 2, 40, 60,"Colonie méditerranéenne composée de milliers de polypes. Certains polypes assurent la circulation de l’eau et la défense tandis que d’autres assurent l’alimentation et la reproduction."),
+    Animaux("dragon_de_komodo", 165, 310, 53,'Grand lézard prédateur qui devient dominant à l’âge adulte. Les jeunes vivent dans les arbres pour éviter d’être mangés par les adultes.'),
+    Animaux("elephant_d_afrique", 5000, 600, 65,'Plus grand mammifère terrestre utilisant sa trompe pour boire, s’asperger d’eau et communiquer. Il dort peu et passe beaucoup de temps à chercher de la nourriture.'),
+    Animaux("lion_d_afrique", 189, 210, 18,'Grand félin vivant en groupe dans les savanes africaines. Les lionnes chassent tandis que les mâles protègent le territoire.'),
+    Animaux("loup_rouge", 25, 110, 13,'Canidé d’Amérique du Nord presque disparu à l’état sauvage. Une réintroduction en Caroline du Nord a permis de sauver environ 150 individus.'),
+    Animaux("merou_golfe", 90, 198, 48,'Poisson pouvant changer de sexe avec l’âge. Il se camoufle dans les récifs rocheux et peut changer de couleur en cas de stress.'),
+    Animaux("panda_geant", 97, 170, 22,'Ours spécialisé dans la consommation de bambou grâce à un faux pouce. Cette adaptation lui permet de saisir et décortiquer les tiges.'),
+    Animaux("panda_roux", 5, 57, 10,'Petit mammifère solitaire vivant dans les arbres et actif surtout la nuit. Il est menacé par la déforestation et le braconnage.'),
+    Animaux("protee_anguillard", 0.02, 25, 69,'Amphibien cavernicole presque aveugle vivant dans les grottes d’Europe. Il détecte ses proies grâce aux vibrations de l’eau.'),
+    Animaux("raie_manta", 1500, 550, 19,'Plus grande raie du monde avec une envergure pouvant atteindre huit mètres. Elle peut sauter hors de l’eau pour des raisons encore mal comprises.'),
+    Animaux("requin_marteau_halicorne", 152, 330, 35,'Requin utilisant sa tête en forme de marteau pour mieux repérer ses proies et détecter les battements cardiaques grâce à ses capteurs sensoriels.'),
+    Animaux("tapir", 200, 212, 30,'Grand herbivore à museau allongé vivant près de l’eau. Excellent nageur, il plonge pour échapper aux prédateurs.'),
+    Animaux("tigre_de_siberie", 300, 230, 17,'Plus grand des tigres vivant dans les forêts froides d’Asie. Sa population a fortement diminué à cause de la chasse et de la perte d’habitat.'),
+    Animaux("tortue_verte", 175, 100, 70,'Tortue marine capable de parcourir plus de 200 km pour rejoindre sa plage de ponte grâce au champ magnétique terrestre.'),
 ]
 
 _RACINE = _trouver_racine_projet()
