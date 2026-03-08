@@ -1,160 +1,167 @@
 # 🐾 Défi Nature — Projet NSI (Terminale)
-## Recréation du jeu de société avec IA et analyse expérimentale
+
+Recréation du jeu de cartes **Défis Nature** en Python, avec :
+- un moteur de jeu indépendant,
+- une interface Pygame jouable,
+- des robots de difficulté variable,
+- un mode de simulations statistiques.
 
 ---
 
-## 📌 Présentation
+## 1) Vision du projet
 
-Ce dépôt contient une **recréation numérique du jeu de société _Défi Nature_**, développée en **Python**, avec une interface graphique réalisée en **Pygame**.
+Ce projet a été construit pour combiner **jeu**, **algorithmique** et **démarche expérimentale**.
 
-Le projet ne se limite pas à une simple adaptation visuelle :  
-il intègre :
+Concrètement, il permet de :
+- jouer une partie complète (Joueur vs Joueur ou Joueur vs Robot),
+- apprendre des informations sur les animaux via un onglet dédié,
+- comparer des stratégies d'IA sur un grand nombre de parties,
+- exporter les résultats pour les analyser.
 
-- 🎮 Une interface interactive complète  
-- 🧠 Plusieurs stratégies de robots (IA)  
-- 📊 Un module de simulations statistiques  
-- 🧱 Une architecture modulaire (moteur indépendant de l’interface)  
-
-L’objectif est de reproduire fidèlement le jeu tout en explorant la **prise de décision algorithmique**.
-
----
-
-## 🎴 Règles du jeu
-
-Chaque carte représente un animal avec trois caractéristiques :
-
-- **Poids**
-- **Longueur**
-- **Longévité**
-
-### Déroulement d’une manche
-
-1. Les cartes sont mélangées et distribuées équitablement.  
-2. Le joueur actif révèle sa carte visible (dernière carte du tas).  
-3. Il choisit une caractéristique.  
-4. Les valeurs sont comparées.  
-5. La valeur **strictement supérieure** gagne la manche.  
-6. En cas d’égalité, le joueur actif perd.  
-7. Le gagnant récupère la carte adverse.  
-8. Les cartes sont réinsérées aléatoirement dans le tas.  
-9. La partie se termine lorsqu’un joueur n’a plus de cartes.  
-
-⚠️ La règle d’égalité rend le choix stratégique plus risqué.
+Le code est pensé pour rester lisible en Terminale NSI :
+- séparation claire entre logique et interface,
+- nomenclature simple,
+- commentaires et fonctions explicites.
 
 ---
 
-## 🚀 Fonctionnalités principales
+## 2) Règles du jeu implémentées
 
-### 🎮 Gameplay
+Chaque carte contient 3 caractéristiques :
+- **poids**,
+- **longueur**,
+- **longévité**.
 
-- Modes disponibles :
-  - Joueur vs Joueur  
-  - Joueur vs Robot  
-- Interface complète :
-  - Affichage des cartes  
-  - Animation de fin de manche  
-  - Historique des manches  
-  - Menu hamburger (Rejouer / Options / Règles / À propos / Quitter)  
-- Sons (clics, victoire)  
-- Options (volume, affichage debug)
+Déroulement d'une manche :
+1. Le joueur actif choisit une caractéristique.
+2. Les deux cartes visibles sont comparées.
+3. La valeur strictement la plus grande gagne.
+4. En cas d'égalité, le joueur actif perd (règle volontaire).
+5. Les cartes sont réinsérées aléatoirement dans la pile du gagnant.
 
----
-
-## 🧠 Intelligence Artificielle
-
-Plusieurs niveaux d’intelligence sont implémentés afin de comparer différentes approches algorithmiques.
-
-### 🔹 Stratégies naïves
-
-- Choix aléatoire  
-- Toujours la même caractéristique  
-
-### 🔹 Stratégies heuristiques
-
-- Comparaison à la moyenne  
-- Comparaison à la médiane  
-- Analyse de l’historique des cartes jouées  
-
-### 🔹 Approches probabilistes
-
-- Estimation des chances de victoire  
-- Simulation de fins de partie  
-- Méthodes de type Monte Carlo  
-
-🎯 L’intérêt principal du projet réside dans la **comparaison expérimentale entre ces stratégies**.
+Fin de partie :
+- dès qu'un joueur n'a plus de carte.
 
 ---
 
-## 📊 Module statistique
+## 3) Fonctionnalités complètes
 
-Le fichier `stats.py` permet :
+### Gameplay / interface
+- Écran d'accueil avec saisie du prénom.
+- Choix du mode :
+  - **Joueur vs Joueur**,
+  - **Joueur vs Robot**.
+- Interface Pygame avec :
+  - boutons de caractéristiques,
+  - historique des dernières manches,
+  - écran de victoire,
+  - sons (clic + victoire),
+  - menu latéral (rejouer, options, règles, animaux, robots, à propos, quitter).
 
-- De comparer automatiquement deux stratégies  
-- De lancer des centaines / milliers de parties  
-- D’obtenir :
-  - Winrate (% de victoire)  
-  - Nombre moyen de manches  
-  - Comparaison vitesse / efficacité  
-- D’utiliser des **seeds fixes** pour garantir la reproductibilité  
-- D’enregistrer les résultats dans `data/results.txt`  
+### Options et accessibilité
+- Réglage du volume.
+- Choix du robot utilisé en mode Joueur vs Robot.
+- Option debug pour afficher/masquer la carte adverse.
+- UI adaptée à un usage pédagogique (contrastes, zones lisibles, textes explicites).
 
-Cette séparation permet de faire des simulations **sans dépendre de Pygame**.
+### Dimension éducative
+- Onglet **Animaux** :
+  - image,
+  - caractéristiques,
+  - descriptif,
+  - navigation précédent/suivant.
+- Données centralisées dans `data/animaux.csv`.
+
+### IA et stratégies
+- Robot aléatoire.
+- Robot heuristique basé sur l'historique (médiane / moyenne).
+- Robots Monte Carlo (rollouts simulés).
+- Stratégies de référence/triche pour comparer les performances en stats.
+
+### Simulations statistiques
+- Comparaison systématique de stratégies.
+- Winrate, intervalle de confiance (Wilson), nombre moyen de manches.
+- Comparaisons symétrisées A/B et B/A pour réduire les biais d'ordre.
+- Répétitions et export CSV dans `data/results.csv`.
 
 ---
 
-## 🧩 Architecture du projet
-
-Le projet est organisé selon une séparation claire des responsabilités :
-
-- `cerveau.py` → moteur du jeu (règles, classes, IA)  
-- `game_pygame.py` → interface graphique uniquement  
-- `stats.py` → simulations statistiques  
-- `main.py` → point d’entrée  
-- `data/animaux.csv` → base de données des cartes  
-
-Cette organisation permet :
-
-- Des tests indépendants de l’interface  
-- Une maintenance plus simple  
-- Une meilleure lisibilité du code  
-
----
-
-## 📂 Structure du projet
+## 4) Architecture du dépôt
 
 ```text
-defi_nature_trophee_nsi/
-│
-├── main.py
-├── cerveau.py
-├── game_pygame.py
-├── stats.py
-├── requirements.txt
-│
+defi-nature-trophee-nsi/
+├── sources/
+│   ├── main.py          # point d'entrée (play/stats)
+│   ├── cerveau.py       # moteur, modèles, IA, chargement CSV
+│   ├── game_pygame.py   # interface graphique Pygame
+│   └── stats.py         # simulations, comparaisons, export CSV
 ├── data/
-│   ├── animaux.csv
-│   └── results.csv
-│
+│   ├── animaux.csv      # données cartes + descriptif
+│   └── results.csv      # sorties du mode stats
 ├── assets/
 │   ├── images/animaux/
 │   └── sounds/
-│
-└── strategies/
-    └── strategies.txt
+├── docs/
+│   ├── index.html       # site de présentation
+│   └── css/styles.css
+├── dossier/
+│   └── presentation.md  # dossier de participation
+├── strategies.md        # synthèse des stratégies IA
+└── requirements.txt
 ```
 
-## 🎮 Jouer au jeu
+---
 
-Si tu veux jouer à **Défi Nature** sans installer Python ni cloner le dépôt :
+## 5) Installation et exécution locale
 
-1. Va sur la page des **Releases** du projet (onglet *Releases* en haut du dépôt GitHub).  
-2. Télécharge le fichier **exécutable Windows (`.exe`)** correspondant à la dernière version publiée.  
-   - Par exemple : `DefiNature-v1.0.0.exe`
-3. Place ce fichier `.exe` dans un dossier avec les dossiers `assets/` et `data/` si ceux-ci sont fournis séparément dans l’archive de la release.
-4. Double-clique sur l’exécutable pour lancer le jeu directement sur ton ordinateur — il n’est **pas nécessaire d’installer Python** ni de taper des commandes dans un terminal.
+## Prérequis
+- Python 3.11+ recommandé
+- dépendances du projet
 
-👉 Tu peux aussi ajouter un lien direct vers la dernière release dans le README, par exemple :
-
-```markdown
-https://github.com/NSI-Term-2025-2026/defi-nature-trophee-nsi/releases/latest
+```bash
+pip install -r requirements.txt
 ```
+
+## Lancer le jeu (Pygame)
+```bash
+python sources/main.py play
+```
+
+## Lancer les simulations statistiques
+```bash
+python sources/main.py stats
+```
+
+---
+
+## 6) Fichiers importants à lire en priorité
+
+- `sources/main.py` : démarrage des modes.
+- `sources/cerveau.py` : règles du jeu, classes, IA, chargement des données.
+- `sources/game_pygame.py` : interactions utilisateur et rendu.
+- `sources/stats.py` : cadre expérimental complet.
+- `strategies.md` : explication des bots et ordre de grandeur des coûts.
+
+---
+
+## 7) Documentation web et dossier NSI
+
+- Site de présentation : `docs/index.html`
+- Dossier de participation : `dossier/presentation.md`
+
+---
+
+## 8) Dépôt GitHub
+
+Remplacer ce lien si besoin selon votre organisation de classe :
+- https://github.com/NSI-Term-2025-2026/defi-nature-trophee-nsi
+
+
+
+---
+
+## 9) État participation Trophées NSI
+
+- `dossier/presentation.md` : prêt et synchronisé avec l'état du projet.
+- architecture du dépôt : cohérente (code, données, assets, docs séparés).
+- vidéo de présentation : non incluse pour l'instant.
