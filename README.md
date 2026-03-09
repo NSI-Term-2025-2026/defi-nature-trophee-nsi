@@ -59,7 +59,7 @@ git clone `https://github.com/NSI-Term-2025-2026/defi-nature-trophee-nsi.git`
 - Pygame
 - NumPy
 - CSV pour les données
-- GitHub pour l’organisation du projet
+- Google Drive et GitHub pour l’organisation du projet
 - Spyder / Visual Studio Code
 
 ## Versions
