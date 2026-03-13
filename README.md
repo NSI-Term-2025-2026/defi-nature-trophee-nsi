@@ -16,7 +16,7 @@ L’objectif est de montrer des compétences en programmation, en algorithmique,
 ### Pré-requis
 
 Ce qu’il est requis pour commencer avec ce projet :
-- Python 3.11 ou supérieur
+- Python
 - pip
 - pygame
 - numpy
