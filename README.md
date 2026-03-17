@@ -20,7 +20,7 @@ Ce qu’il est requis pour commencer avec ce projet :
 - pip
 - pygame
 - numpy
-
+ 
 ### Installation
 #### Option 1
 Les étapes pour jouer au jeu :
