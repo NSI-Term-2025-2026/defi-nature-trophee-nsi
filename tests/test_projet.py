@@ -5,7 +5,7 @@ Tests simples (niveau Terminale NSI) pour vérifier le cœur du projet.
 Exécution :
     python tests/test_projet.py
 """
-
+ 
 import sys
 import unittest
 from pathlib import Path
