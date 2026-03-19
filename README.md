@@ -7,7 +7,7 @@ Le projet propose un moteur de jeu séparé de l’interface, un mode graphique 
 
 Ce projet permet de :
 - jouer à deux joueurs ;
-- jouer contre un robot ;
+- jouer contre un robot ; 
 - découvrir des animaux et leurs caractéristiques ;
 - comparer plusieurs stratégies grâce à des simulations automatiques.
 
