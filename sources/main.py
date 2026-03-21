@@ -10,7 +10,7 @@ Point d'entrée du projet.
 - Mode stats (sans Pygame) : python sources/main.py stats
 """
 
-import sys
+import sys 
 
 
 def main():
